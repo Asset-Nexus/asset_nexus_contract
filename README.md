@@ -1,12 +1,12 @@
-## 部署验证流程（hardhat官网教程）
-1. 编译 `npx hardhat compile`
-2. 部署 `npx hardhat ignition deploy ./ignition/modules/Lock.js --network bnb_testnet`
-2. 验证 `npx hardhat verify --network bnb_testnet ${contratc_address}  ${constructor_args}`
-## 参考文档：
-- bnb官网：https://docs.bnbchain.org/docs/hardhat-new/#compile-smart-contract
-- hardhat官网：https://hardhat.org/hardhat-runner/docs/guides/deploying
-- bnb_test浏览器：https://bscscan.com/
-## 已经部署：
+## Deployment Verification Process (Hardhat Official Website Tutorial)
+1. compile `npx hardhat compile`
+2. deploy `npx hardhat ignition deploy ./ignition/modules/Lock.js --network bnb_testnet`
+2. verify `npx hardhat verify --network bnb_testnet ${contratc_address}  ${constructor_args}`
+## Reference document
+- bnb doc：https://docs.bnbchain.org/docs/hardhat-new/#compile-smart-contract
+- hardhat doc：https://hardhat.org/hardhat-runner/docs/guides/deploying
+- bnb_test：https://bscscan.com/
+## Deploy information
 Deployed Addresses
 
 AssetNexusNft#AssetNexusNft - 0x07257f26590C08be6fAE45326397DC2258A9B4A1
