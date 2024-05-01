@@ -10,7 +10,7 @@ contract NFTMarketPlace is ReentrancyGuard, IERC721Receiver {
     address public immutable ASSET_NEXUS_TOKEN;
 
     // mapping(bytes32 => address) public nftList;
-    address[] public nftList; // 保存所有Pair地址
+    address[] public nftList;
 
     struct Listing {
         uint price;
@@ -38,6 +38,7 @@ contract NFTMarketPlace is ReentrancyGuard, IERC721Receiver {
 
     event NewNFTContractCreated(
         address indexed nftAddress,
+        uint index,
         string name,
         string symbol
     );
@@ -79,14 +80,13 @@ contract NFTMarketPlace is ReentrancyGuard, IERC721Receiver {
     function createAssetNexusNft(
         string memory name,
         string memory symbol
-    ) public returns (address) {
+    ) public returns (uint) {
         bytes32 _salt = generateSalt(name, symbol);
         AssetNexusNft newNft = new AssetNexusNft{salt: _salt}(name, symbol);
         address newAddr = address(newNft);
-        // nftList[_salt] = newAddr;
         nftList.push(newAddr);
-        emit NewNFTContractCreated(newAddr, name, symbol);
-        return newAddr;
+        emit NewNFTContractCreated(newAddr, nftList.length - 1,name, symbol);
+        return nftList.length - 1;
     }
 
     function onERC721Received(
