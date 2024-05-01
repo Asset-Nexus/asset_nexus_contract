@@ -5,7 +5,7 @@
 ## Reference document
 - bnb doc：https://docs.bnbchain.org/docs/hardhat-new/#compile-smart-contract
 - hardhat doc：https://hardhat.org/hardhat-runner/docs/guides/deploying
-- bnb_test：https://bscscan.com/
+- bnb_test：https://testnet.bscscan.com/
 ## Deploy information
 Deployed Addresses
 
