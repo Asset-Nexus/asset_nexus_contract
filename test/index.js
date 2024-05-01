@@ -9,6 +9,14 @@ const { ethers } = require("hardhat");
 describe("Test", function () {
   let accountA, accountB, accountC, accountD;
   let assetNexusToken, assetNexusNft, nftMarketPlace;
+  const fashion_uri =
+    "https://ipfs.filebase.io/ipfs/QmTz6ajnLUXwaXCjZ7Zvdk2nXGdQNspnLPsgwZFDP45tUJ/fashion.json";
+  const ghost_uri =
+    "https://ipfs.filebase.io/ipfs/QmTz6ajnLUXwaXCjZ7Zvdk2nXGdQNspnLPsgwZFDP45tUJ/ghost.json";
+  const godfather_uri =
+    "https://ipfs.filebase.io/ipfs/QmTz6ajnLUXwaXCjZ7Zvdk2nXGdQNspnLPsgwZFDP45tUJ/godfather.json";
+  const smoke_uri =
+    "https://ipfs.filebase.io/ipfs/QmTz6ajnLUXwaXCjZ7Zvdk2nXGdQNspnLPsgwZFDP45tUJ/smoke.json";
 
   this.beforeEach(async function () {
     [accountA, accountB, accountC, accountD] = await ethers.getSigners();
@@ -18,13 +26,17 @@ describe("Test", function () {
       [],
       accountA
     );
-    assetNexusNft = await ethers.deployContract("AssetNexusNft", [], accountA);
 
     nftMarketPlace = await ethers.deployContract(
       "NFTMarketPlace",
-      [assetNexusToken.target, assetNexusNft.target],
+      [assetNexusToken.target],
       accountA
     );
+
+    await nftMarketPlace.createAssetNexusNft("test_name", "test_symbol");
+    let assetNexusNftAddr = await nftMarketPlace.nftList(0n);
+    console.log("assetNexusNftAddr: ", assetNexusNftAddr);
+    assetNexusNft = await ethers.getContractAt("AssetNexusNft", assetNexusNftAddr);
 
     console.log("assetNexusToken: ", assetNexusToken.target);
     console.log("assetNexusNft: ", assetNexusNft.target);
@@ -37,10 +49,10 @@ describe("Test", function () {
     await assetNexusToken.mint(accountC.address, mintAmount);
     await assetNexusToken.mint(accountD.address, mintAmount);
     // Cast one NFT for each account
-    await assetNexusNft.connect(accountA).mint();
-    await assetNexusNft.connect(accountB).mint();
-    await assetNexusNft.connect(accountC).mint();
-    await assetNexusNft.connect(accountD).mint();
+    await assetNexusNft.connect(accountA).mintItem(fashion_uri);
+    await assetNexusNft.connect(accountB).mintItem(ghost_uri);
+    await assetNexusNft.connect(accountC).mintItem(godfather_uri);
+    await assetNexusNft.connect(accountD).mintItem(smoke_uri);
 
     // token approve
     await assetNexusToken
@@ -62,8 +74,13 @@ describe("Test", function () {
     await assetNexusNft.connect(accountD).approve(nftMarketPlace.target, 3n);
   });
 
+  it("token uri", async function () {
+    let uri = await assetNexusNft.connect(accountA).tokenURI(0n);
+    console.log("uri: ", uri);
+  });
+
   it("display function", async function () {
-    await nftMarketPlace.connect(accountA).listItem(ethers.parseEther("8"), 0n);
+    await nftMarketPlace.connect(accountA).listItem(assetNexusNft.target, ethers.parseEther("8"), 0n);
     let listingInfo = await nftMarketPlace.listing(assetNexusNft.target, 0n);
     console.log("listingInfo: ", listingInfo);
     let newOwner = await assetNexusNft.ownerOf(0n);
@@ -72,8 +89,8 @@ describe("Test", function () {
 
   // A listing, B buy
   it("buy function", async function () {
-    await nftMarketPlace.connect(accountA).listItem(ethers.parseEther("8"), 0n);
-    await nftMarketPlace.connect(accountB).buyItem(0n);
+    await nftMarketPlace.connect(accountA).listItem(assetNexusNft.target, ethers.parseEther("8"), 0n);
+    await nftMarketPlace.connect(accountB).buyItem(assetNexusNft.target, 0n);
     let newOwner = await assetNexusNft.ownerOf(0n);
     expect(newOwner).to.equal(accountB.address);
 
@@ -95,7 +112,7 @@ describe("Test", function () {
 
   // A listing, A cancel
   it("cancel function", async function () {
-    await nftMarketPlace.connect(accountA).listItem(ethers.parseEther("8"), 0n);
+    await nftMarketPlace.connect(accountA).listItem(assetNexusNft.target, ethers.parseEther("8"), 0n);
     let newOwner = await assetNexusNft.ownerOf(0n);
     expect(newOwner).to.equal(nftMarketPlace.target);
     let listingInfo = await nftMarketPlace.listing(assetNexusNft.target, 0n);
@@ -103,7 +120,7 @@ describe("Test", function () {
       ethers.parseEther("8"),
       accountA.address,
     ]);
-    await nftMarketPlace.connect(accountA).cancelListing(0n);
+    await nftMarketPlace.connect(accountA).cancelListing(assetNexusNft.target, 0n);
     let afterNewOwner = await assetNexusNft.ownerOf(0n);
     expect(afterNewOwner).to.equal(accountA.address);
     let afterListingInfo = await nftMarketPlace.listing(
@@ -118,10 +135,10 @@ describe("Test", function () {
 
   // A listing, A update
   it("cancel function", async function () {
-    await nftMarketPlace.connect(accountA).listItem(ethers.parseEther("8"), 0n);
+    await nftMarketPlace.connect(accountA).listItem(assetNexusNft.target, ethers.parseEther("8"), 0n);
     await nftMarketPlace
       .connect(accountA)
-      .updateListing(0n, ethers.parseEther("5"));
+      .updateListing(assetNexusNft.target, 0n, ethers.parseEther("5"));
     let listingInfo = await nftMarketPlace.listing(assetNexusNft.target, 0n);
     expect(listingInfo).to.deep.equal([
       ethers.parseEther("5"),
