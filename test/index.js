@@ -162,7 +162,7 @@ describe("Test", function () {
   });
 
   // A nftListings, A update
-  it("cancel function", async function () {
+  it("update function", async function () {
     await nftMarketPlace
       .connect(accountA)
       .listItem(assetNexusNft.target,  0n,ethers.parseEther("8"));

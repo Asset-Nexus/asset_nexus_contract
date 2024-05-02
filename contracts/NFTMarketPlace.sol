@@ -6,7 +6,7 @@ import "@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol";
 import "./AssetNexusNft.sol";
 
 contract NFTMarketPlace is IERC721Receiver {
-    struct NFTListing  {
+    struct NFTListing {
         uint price;
         address seller;
     }
@@ -18,7 +18,7 @@ contract NFTMarketPlace is IERC721Receiver {
 
     address public immutable ASSET_NEXUS_TOKEN;
     // nftAddress => tokenId => NFTListing
-    mapping(address => mapping(uint => NFTListing )) public nftListings;
+    mapping(address => mapping(uint => NFTListing)) public nftListings;
     // eoa address => MyListing[]
     mapping(address => MyListing[]) public myListings;
     // nft name => nft address
@@ -69,19 +69,16 @@ contract NFTMarketPlace is IERC721Receiver {
     error NotApproved(address nftAddress, uint tokenId);
 
     modifier isListed(address nftAddress, uint tokenId) {
-        NFTListing  memory curListing = nftListings[nftAddress][tokenId];
+        NFTListing memory curListing = nftListings[nftAddress][tokenId];
+        // require(curListing.seller == msg.sender, "This NFT's seller is not current address!");
         require(curListing.price > 0, "Current NFT has no listed!");
         _;
     }
 
-    modifier isOwner(
-        address nftAddress,
-        uint tokenId,
-        address spender
-    ) {
+    modifier isOwner(address nftAddress, uint tokenId) {
         IERC721 nft = IERC721(nftAddress);
         require(
-            nft.ownerOf(tokenId) == spender,
+            nft.ownerOf(tokenId) == msg.sender,
             "This NFT is not belong to current address!"
         );
         _;
@@ -111,7 +108,11 @@ contract NFTMarketPlace is IERC721Receiver {
         return this.onERC721Received.selector;
     }
 
-    function listItem(address nftAddr, uint tokenId, uint price) external {
+    function listItem(
+        address nftAddr,
+        uint tokenId,
+        uint price
+    ) external isOwner(nftAddr, tokenId) {
         IERC721 nft = IERC721(nftAddr);
 
         if (nftListings[nftAddr][tokenId].price > 0) {
@@ -121,13 +122,16 @@ contract NFTMarketPlace is IERC721Receiver {
             revert NotApproved(nftAddr, tokenId);
         }
         nft.safeTransferFrom(msg.sender, address(this), tokenId);
-        nftListings[nftAddr][tokenId] = NFTListing (price, msg.sender);
+        nftListings[nftAddr][tokenId] = NFTListing(price, msg.sender);
         myListings[msg.sender].push(MyListing(nftAddr, tokenId, price));
         emit ItemListed(msg.sender, nftAddr, tokenId);
     }
 
-    function buyItem(address nftAddr, uint tokenId) external {
-        NFTListing  memory curListing = nftListings[nftAddr][tokenId];
+    function buyItem(
+        address nftAddr,
+        uint tokenId
+    ) external isListed(nftAddr, tokenId) {
+        NFTListing memory curListing = nftListings[nftAddr][tokenId];
         IERC20 token = IERC20(ASSET_NEXUS_TOKEN);
         uint allowanceAmount = token.allowance(msg.sender, address(this));
         uint balance = token.balanceOf(msg.sender);
@@ -148,7 +152,10 @@ contract NFTMarketPlace is IERC721Receiver {
         emit BuyItem(msg.sender, nftAddr, tokenId, curListing.price);
     }
 
-    function cancelListing(address nftAddr, uint tokenId) external {
+    function cancelListing(
+        address nftAddr,
+        uint tokenId
+    ) external isListed(nftAddr, tokenId) {
         delete nftListings[nftAddr][tokenId];
         handleSell(myListings[msg.sender], nftAddr, tokenId);
         IERC721(nftAddr).safeTransferFrom(address(this), msg.sender, tokenId);
@@ -159,7 +166,7 @@ contract NFTMarketPlace is IERC721Receiver {
         address nftAddr,
         uint tokenId,
         uint newPrice
-    ) external {
+    ) external isListed(nftAddr, tokenId) {
         nftListings[nftAddr][tokenId].price = newPrice;
         handleUpdate(myListings[msg.sender], nftAddr, tokenId, newPrice);
         emit UpdateItem(msg.sender, nftAddr, tokenId, newPrice);
