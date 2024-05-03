@@ -7,7 +7,7 @@ const deployAssetNexusTokenModule = buildModule("AssetNexusToken", (m) => {
 
 
 const deployAssetNexusNftModule = buildModule("AssetNexusNft", (m) => {
-  const assetNexusNft = m.contract("AssetNexusNft", ["cxp", "cxp_s"]);
+  const assetNexusNft = m.contract("AssetNexusNft", ["asset_nexus", "an"]);
   return { assetNexusNft };
 });
 

@@ -24,7 +24,7 @@ module.exports = {
   },
   etherscan: {
     // https://bscscan.com/myapikey
-    // apiKey: process.env.BNB_TESTNETSCAN_API_KEY
-    apiKey: process.env.SEPOLIA_TESTNETSCAN_API_KEY
+    apiKey: process.env.BNB_TESTNETSCAN_API_KEY
+    // apiKey: process.env.SEPOLIA_TESTNETSCAN_API_KEY
   },
 };

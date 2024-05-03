@@ -8,16 +8,10 @@
 - hardhat doc：https://hardhat.org/hardhat-runner/docs/guides/deploying
 - bnb_test：https://testnet.bscscan.com/
 ## Deploy information
-Deployed Addresses
-
-AssetNexusNft#AssetNexusNft - 
-AssetNexusToken#AssetNexusToken - 0x7e7fc807C8f232d249D03870f60EcCa0f90Dd723
-NFTMarketPlace#NFTMarketPlace - 0xBC9eF51F02fCf3AB20fc01c4846e187F53cE08C3
-
-sepolia:
-AssetNexusToken#AssetNexusToken - 0x1E3aEb8146C4Cc9fe263A16f8Ff88b2e8B1584b9
-NFTMarketPlace#NFTMarketPlace - 0xfcaEE18ca3595a47a0b354E2ca6D6284A2d970f6
-
+bsc testnet:
+AssetNexusNft#AssetNexusNft - 0xD0e1e02AaBfC1DA1381519aB97167CaE9ce979ae
+AssetNexusToken#AssetNexusToken - 0xc5357b5424ED35C9e3d6DA958BeDcCc172e4Fde5
+NFTMarketPlace#NFTMarketPlace - 0x10f9227D860B4dE05f873DF74A1246c272C454b3
 
 # Sample Hardhat Project
 
