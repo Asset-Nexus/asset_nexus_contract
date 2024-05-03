@@ -33,8 +33,8 @@ describe("Test", function () {
       accountA
     );
 
-    let index = await nftMarketPlace.createAssetNexusNft("asset_nxus", "an");
-    console.log("index: ", index);
+    await nftMarketPlace.addAddressToWhitelist(accountA.address);
+    await nftMarketPlace.createAssetNexusNft("asset_nxus", "an");
 
     let assetNexusNftAddr = await nftMarketPlace.nftContractsByNames(
       "asset_nxus"
@@ -178,4 +178,12 @@ describe("Test", function () {
       accountA.address,
     ]);
   });
+
+
+  // whitelist
+  it("whiteList function", async function () {
+    await nftMarketPlace.addAddressToWhitelist(accountB.address);
+    let isWhite = await nftMarketPlace.whitelist(accountB.address);
+    expect(isWhite).to.equal(true);
+  })
 });
