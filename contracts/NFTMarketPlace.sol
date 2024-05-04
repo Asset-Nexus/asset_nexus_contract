@@ -86,7 +86,10 @@ contract NFTMarketPlace is IERC721Receiver {
     }
 
     modifier onlyWhitelisted() {
-        require(whitelist[msg.sender], "Only whitelisted addresses can call this function.");
+        require(
+            whitelist[msg.sender],
+            "Only whitelisted addresses can call this function."
+        );
         _;
     }
 
@@ -94,10 +97,14 @@ contract NFTMarketPlace is IERC721Receiver {
         ASSET_NEXUS_TOKEN = token;
     }
 
+    function getMyListing(address _owner) external view returns (MyListing[] memory) {
+        return myListings[_owner];
+    }
+
     function createAssetNexusNft(
         string memory name,
         string memory symbol
-    ) external onlyWhitelisted{
+    ) external onlyWhitelisted {
         bytes32 _salt = keccak256(abi.encodePacked(name, symbol));
         AssetNexusNft newNft = new AssetNexusNft{salt: _salt}(name, symbol);
         address newAddr = address(newNft);
@@ -185,11 +192,11 @@ contract NFTMarketPlace is IERC721Receiver {
         IERC20(ASSET_NEXUS_TOKEN).transfer(msg.sender, curProceeds);
     }
 
-    function addAddressToWhitelist(address _address) public  {
+    function addAddressToWhitelist(address _address) public {
         whitelist[_address] = true;
     }
 
-    function removeAddressFromWhitelist(address _address) public  {
+    function removeAddressFromWhitelist(address _address) public {
         whitelist[_address] = false;
     }
 

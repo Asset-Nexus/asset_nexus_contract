@@ -11,7 +11,7 @@
 bsc testnet:
 AssetNexusNft#AssetNexusNft - 0xD0e1e02AaBfC1DA1381519aB97167CaE9ce979ae
 AssetNexusToken#AssetNexusToken - 0xc5357b5424ED35C9e3d6DA958BeDcCc172e4Fde5
-NFTMarketPlace#NFTMarketPlace - 0x10f9227D860B4dE05f873DF74A1246c272C454b3
+NFTMarketPlace#NFTMarketPlace - 0x9eB806aa688048e1c92A54688086BE8f696D5F00
 
 # Sample Hardhat Project
 

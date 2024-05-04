@@ -102,6 +102,11 @@ describe("Test", function () {
     );
     console.log("accountAListingInfo: ", accountAListingInfo);
 
+
+    let accountAListingInfo2 = await nftMarketPlace.getMyListing(accountA.address);
+    console.log("accountAListingInfo2: ", accountAListingInfo2);
+
+
     let newOwner = await assetNexusNft.ownerOf(0n);
     expect(newOwner).to.equal(nftMarketPlace.target);
   });
