@@ -6,16 +6,16 @@ const deployAssetNexusTokenModule = buildModule("AssetNexusToken", (m) => {
 });
 
 
-// const deployAssetNexusNftModule = buildModule("AssetNexusNft", (m) => {
-//   const assetNexusNft = m.contract("AssetNexusNft", ["asset_nexus", "an"]);
-//   return { assetNexusNft };
-// });
+const deployAssetNexusNftModule = buildModule("AssetNexusNft", (m) => {
+  const assetNexusNft = m.contract("AssetNexusNft", ["asset_nexus", "an"]);
+  return { assetNexusNft };
+});
 
 
 
 const deployNFTMarketPlaceModule = buildModule("NFTMarketPlace", (m) => {
   const { assetNexusToken } = m.useModule(deployAssetNexusTokenModule);
-  // const { assetNexusNft } = m.useModule(deployAssetNexusNftModule);
+  const { assetNexusNft } = m.useModule(deployAssetNexusNftModule);
   const nftMarketPlace = m.contract("NFTMarketPlace", [assetNexusToken]);
   return { nftMarketPlace };
 });

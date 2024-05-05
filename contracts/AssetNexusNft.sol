@@ -10,10 +10,11 @@ contract AssetNexusNft is ERC721URIStorage {
 
     constructor(string memory name, string memory symbol) ERC721(name, symbol) {}
 
-    function mintItem(string memory tokenURI) public {
+    function mintItem(string memory tokenURI) public returns(uint256){
         _mint(msg.sender, tokenCounter);
         _setTokenURI(tokenCounter, tokenURI);
         emit NewNFTMinted(msg.sender, tokenCounter, tokenURI);
-        tokenCounter += 1;
+        
+        return tokenCounter++;
     }
 }

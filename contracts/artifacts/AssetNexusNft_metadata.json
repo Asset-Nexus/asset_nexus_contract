@@ -345,7 +345,13 @@
 					}
 				],
 				"name": "mintItem",
-				"outputs": [],
+				"outputs": [
+					{
+						"internalType": "uint256",
+						"name": "",
+						"type": "uint256"
+					}
+				],
 				"stateMutability": "nonpayable",
 				"type": "function"
 			},
@@ -812,11 +818,11 @@
 			]
 		},
 		"contracts/AssetNexusNft.sol": {
-			"keccak256": "0x44fb46524afa0e7bce6be130ed9c4431315b5e23c0e84e23342ba9479c0faaa9",
+			"keccak256": "0x53a0df333ddad3675199c5c4a0f2461b1d0c33623159579b15a51c61d767cc2a",
 			"license": "MIT",
 			"urls": [
-				"bzz-raw://387242b1ef2700683ad2a70d0cfc86720be90a0c96fbd7cb4577ee998f87ad3c",
-				"dweb:/ipfs/QmfDoMtfYncar3iS3f3RGSa2CcnHgRo6QGMxyer8B64ZTk"
+				"bzz-raw://acaf17b96351530507a0c5f99fdd8415712af054b0341024a72f6355d3f4c08f",
+				"dweb:/ipfs/QmRSwDGjt8kGY9m26aVhC47o6NH2Ge481huPdvL6acXWMo"
 			]
 		}
 	},

@@ -9,9 +9,9 @@
 - bnb_test：https://testnet.bscscan.com/
 ## Deploy information
 bsc testnet:
-AssetNexusNft#AssetNexusNft - 0xD0e1e02AaBfC1DA1381519aB97167CaE9ce979ae
-AssetNexusToken#AssetNexusToken - 0xc5357b5424ED35C9e3d6DA958BeDcCc172e4Fde5
-NFTMarketPlace#NFTMarketPlace - 0x9eB806aa688048e1c92A54688086BE8f696D5F00
+AssetNexusNft#AssetNexusNft - 0xeC8aCa83fa696c57e58218e0F38698787c217320
+AssetNexusToken#AssetNexusToken - 0x9D964d0e4Ae80Eb798088a998af1a36DC4A0DE49
+NFTMarketPlace#NFTMarketPlace - 0xF393253cDbfbd7c147A35928e874016c873Fb723
 
 # Sample Hardhat Project
 
