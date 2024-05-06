@@ -43,26 +43,17 @@ contract NFTMarketPlace is IERC721Receiver {
         uint indexed tokenId,
         uint price
     );
-
     event CancelListing(
         address indexed seller,
         address indexed nftAddress,
         uint indexed tokenId
     );
-
     event NewNFTContractCreated(
         address indexed nftAddress,
         string name,
         string symbol
     );
-    event RequestPriceBegin(
-        bytes32 indexed requestId,
-        address indexed nftAddress,
-        uint indexed tokenId
-    );
-
-    event RequestPriceReceive(bytes32 indexed requestId, uint256 price);
-
+    
     error InsufficientBalance(address buyer, uint balance, uint price);
     error InsufficientApproveLimit(address buyer, uint allowance);
     error HasListed(address nftAddress, uint tokenId);
