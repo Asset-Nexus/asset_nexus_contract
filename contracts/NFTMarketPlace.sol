@@ -3,26 +3,24 @@ pragma solidity ^0.8.24;
 import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 import "@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol";
 import "./AssetNexusNft.sol";
-import {BSCMessenger} from "./BSCMessenger.sol";
 import "./AssetNexusToken.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
+import {Messenger} from "./Messenger.sol";
 
 contract NFTMarketPlace is IERC721Receiver {
+    using Strings for string;
+
     struct NFTSalesInformation {
         address nftAddr;
         uint256 tokenId;
         uint256 price;
         address seller;
         uint256 timestamp;
-        string chainName;
+        uint256 chainId;
     }
 
-    using Strings for string;
-
     AssetNexusToken public assetNexusToken;
-
-    BSCMessenger public bscMessenger;
-    address public immutable ASSET_NEXUS_TOKEN;
+    Messenger public messenger;
     NFTSalesInformation[] public nftSaleInfoList;
     // nftAddress => tokenId => NFTSalesInformation
     mapping(address => mapping(uint256 => NFTSalesInformation))
@@ -40,7 +38,7 @@ contract NFTMarketPlace is IERC721Receiver {
         uint256 indexed tokenId,
         uint256 price,
         uint256 timestamp,
-        string chainName
+        uint256 chainId
     );
     event UpdateItem(
         address indexed seller,
@@ -97,9 +95,9 @@ contract NFTMarketPlace is IERC721Receiver {
         _;
     }
 
-    constructor(address tokenAddr, address bscMessengerAddr) {
+    constructor(address tokenAddr, address payable messengerAddr) {
         assetNexusToken = AssetNexusToken(tokenAddr);
-        bscMessenger = BSCMessenger(payable(bscMessengerAddr));
+        messenger = Messenger(messengerAddr);
     }
 
     function getAllListing()
@@ -110,18 +108,16 @@ contract NFTMarketPlace is IERC721Receiver {
         return nftSaleInfoList;
     }
 
-    function getMyListing(address _owner)
-        external
-        view
-        returns (NFTSalesInformation[] memory)
-    {
+    function getMyListing(
+        address _owner
+    ) external view returns (NFTSalesInformation[] memory) {
         return myListings[_owner];
     }
 
-    function createAssetNexusNft(string memory name, string memory symbol)
-        external
-        onlyWhitelisted
-    {
+    function createAssetNexusNft(
+        string memory name,
+        string memory symbol
+    ) external onlyWhitelisted {
         bytes32 _salt = keccak256(abi.encodePacked(name, symbol));
         AssetNexusNft newNft = new AssetNexusNft{salt: _salt}(name, symbol);
         address newAddr = address(newNft);
@@ -130,10 +126,10 @@ contract NFTMarketPlace is IERC721Receiver {
     }
 
     function onERC721Received(
-        address operator,
-        address from,
-        uint256 tokenId,
-        bytes calldata data
+        address /* operator */,
+        address /* from */,
+        uint256 /* tokenId */,
+        bytes calldata /* data */
     ) external pure override returns (bytes4) {
         return this.onERC721Received.selector;
     }
@@ -142,7 +138,8 @@ contract NFTMarketPlace is IERC721Receiver {
         address nftAddr,
         uint256 tokenId,
         uint256 price,
-        string memory chainName
+        uint chainId,
+        bool isCrossChain
     ) external {
         IERC721 nft = IERC721(nftAddr);
 
@@ -150,7 +147,7 @@ contract NFTMarketPlace is IERC721Receiver {
             revert HasListed(nftAddr, tokenId);
         }
 
-        if (chainName.equal("bsc_test")) {
+        if (!isCrossChain) {
             nft.safeTransferFrom(msg.sender, address(this), tokenId);
         }
 
@@ -160,7 +157,7 @@ contract NFTMarketPlace is IERC721Receiver {
             nftAddr: nftAddr,
             tokenId: tokenId,
             timestamp: block.timestamp,
-            chainName: chainName
+            chainId: chainId
         });
 
         nftListings[nftAddr][tokenId] = newListing;
@@ -172,65 +169,9 @@ contract NFTMarketPlace is IERC721Receiver {
             tokenId,
             price,
             block.timestamp,
-            chainName
+            chainId
         );
     }
-
-    // function listItem(
-    //     address nftAddr,
-    //     uint tokenId,
-    //     uint price
-    // ) external isOwner(nftAddr, tokenId) {
-    //     IERC721 nft = IERC721(nftAddr);
-
-    //     if (nftListings[nftAddr][tokenId].price > 0) {
-    //         revert HasListed(nftAddr, tokenId);
-    //     }
-    //     if (nft.getApproved(tokenId) != address(this)) {
-    //         revert NotApproved(nftAddr, tokenId);
-    //     }
-    //     nft.safeTransferFrom(msg.sender, address(this), tokenId);
-
-    //     NFTSalesInformation memory newListing = NFTSalesInformation({
-    //         price: price,
-    //         seller: msg.sender,
-    //         nftAddr: nftAddr,
-    //         tokenId: tokenId,
-    //         timestamp: block.timestamp,
-    //         chainName: "bsc test"
-    //     });
-
-    //     nftListings[nftAddr][tokenId] = newListing;
-    //     myListings[msg.sender].push(newListing);
-    //     nftSaleInfoList.push(newListing);
-    //     emit ItemListed(
-    //         msg.sender,
-    //         nftAddr,
-    //         tokenId,
-    //         price,
-    //         block.timestamp,
-    //         "bsc test"
-    //     );
-    // }
-
-    // function buyItem(
-    //     address nftAddr,
-    //     uint tokenId
-    // ) external isListed(nftAddr, tokenId) {
-    //     NFTSalesInformation memory curListing = nftListings[nftAddr][tokenId];
-    //     assetNexusToken.transferFrom(
-    //         msg.sender,
-    //         address(this),
-    //         curListing.price
-    //     );
-    //     proceeds[curListing.seller] += curListing.price;
-    //     delete nftListings[nftAddr][tokenId];
-    //     IERC721(nftAddr).safeTransferFrom(address(this), msg.sender, tokenId);
-
-    //     handleRemove(nftSaleInfoList, nftAddr, tokenId);
-    //     handleRemove(myListings[curListing.seller], nftAddr, tokenId);
-    //     emit BuyItem(msg.sender, nftAddr, tokenId, curListing.price);
-    // }
 
     function buyItem(
         address nftAddr,
@@ -261,7 +202,7 @@ contract NFTMarketPlace is IERC721Receiver {
                 msg.sender,
                 curListing.tokenId
             );
-            bscMessenger.sendMessagePayLINK(
+            messenger.sendMessagePayLINK(
                 destinationChainSelector,
                 receiver,
                 data
@@ -273,10 +214,10 @@ contract NFTMarketPlace is IERC721Receiver {
         emit BuyItem(msg.sender, nftAddr, tokenId, curListing.price);
     }
 
-    function cancelListing(address nftAddr, uint256 tokenId)
-        external
-        isListed(nftAddr, tokenId)
-    {
+    function cancelListing(
+        address nftAddr,
+        uint256 tokenId
+    ) external isListed(nftAddr, tokenId) {
         delete nftListings[nftAddr][tokenId];
         handleRemove(myListings[msg.sender], nftAddr, tokenId);
         handleRemove(nftSaleInfoList, nftAddr, tokenId);

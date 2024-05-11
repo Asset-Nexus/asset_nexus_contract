@@ -18,13 +18,19 @@ module.exports = {
       accounts: [process.env.WALLET_PRIVATE_KEY],
     },
     sepolia: {
-      url: "https://sepolia.infura.io/v3/6b7f3960da564093ade725a5b8e6d3b4", // 替换为 Sepolia API 的节点 URL
-      accounts: [process.env.WALLET_PRIVATE_KEY], // 设置部署账户的私钥
+      url: "https://sepolia.infura.io/v3/6b7f3960da564093ade725a5b8e6d3b4",
+      accounts: [process.env.WALLET_PRIVATE_KEY], 
+    },
+    wemix_test: {
+      url: "https://api.test.wemix.com",
+      accounts: [process.env.WALLET_PRIVATE_KEY]
     }
   },
   etherscan: {
     // https://bscscan.com/myapikey
     apiKey: process.env.BNB_TESTNETSCAN_API_KEY
+    // apiKey: process.env.WEMIX_TEST_APIKEY
     // apiKey: process.env.SEPOLIA_TESTNETSCAN_API_KEY
-  },
+  }
+
 };
