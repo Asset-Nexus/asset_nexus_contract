@@ -19,6 +19,12 @@ wemix:
 nft：0xB6cBBbbF49664c749Fc519d7d03194C22645CC31
 receiver：0xD6C1e806B29D22B862e5c8AA2a35CE2e98B82002
 
+## Test account
+1. 0xc0ee714715108b1a6795391f7e05a044d795ba70
+secret key: 641943fa6c3fab18fed274c2b3194f0d71383ecfb9a58b2d70188e693c245510
+2. 0xb9d47c289b8dacff0b894e385464f51e5eabdd86
+secret key: a39de0eaa34cd3be35a7a200989437b9f672a4056298a51f086db9b634683fec
+
 # Sample Hardhat Project
 
 This project demonstrates a basic Hardhat use case. It comes with a sample contract, a test for that contract, and a Hardhat Ignition module that deploys that contract.
