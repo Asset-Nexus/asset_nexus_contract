@@ -7,6 +7,7 @@
 - bnb doc：https://docs.bnbchain.org/docs/hardhat-new/#compile-smart-contract
 - hardhat doc：https://hardhat.org/hardhat-runner/docs/guides/deploying
 - bnb_test：https://testnet.bscscan.com/
+- wemix_test: https://explorer.test.wemix.com/
 ## Deploy information
 bsc testnet:
 NFTMarketPlace#AssetNexusNft - 0x07bCeBAAE91C26dF232301eA292fcD0D49Efb04A
