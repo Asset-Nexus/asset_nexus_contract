@@ -1,51 +1,61 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.24;
 import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
-import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol";
 import "./AssetNexusNft.sol";
+import "./AssetNexusToken.sol";
+import "@openzeppelin/contracts/utils/Strings.sol";
+import {Messenger} from "./Messenger.sol";
 
 contract NFTMarketPlace is IERC721Receiver {
+    using Strings for string;
+
     struct NFTSalesInformation {
         address nftAddr;
-        uint tokenId;
-        uint price;
+        uint256 tokenId;
+        uint256 price;
         address seller;
-        uint timestamp;
+        uint256 timestamp;
+        uint256 chainId;
     }
 
-    address public immutable ASSET_NEXUS_TOKEN;
+    AssetNexusToken public assetNexusToken;
+    Messenger public messenger;
     NFTSalesInformation[] public nftSaleInfoList;
     // nftAddress => tokenId => NFTSalesInformation
-    mapping(address => mapping(uint => NFTSalesInformation)) public nftListings;
+    mapping(address => mapping(uint256 => NFTSalesInformation))
+        public nftListings;
     // eoa address => NFTSalesInformation[]
     mapping(address => NFTSalesInformation[]) public myListings;
     // nft name => nft address
     mapping(string => address) public nftContractsByNames;
-    mapping(address => uint) public proceeds;
+    mapping(address => uint256) public proceeds;
     mapping(address => bool) public whitelist;
 
     event ItemListed(
         address indexed seller,
         address indexed nftAddress,
-        uint indexed tokenId
+        uint256 indexed tokenId,
+        uint256 price,
+        uint256 timestamp,
+        uint256 chainId
     );
     event UpdateItem(
         address indexed seller,
         address indexed nftAddress,
-        uint indexed tokenId,
-        uint price
+        uint256 indexed tokenId,
+        uint256 price
     );
     event BuyItem(
         address indexed buyer,
         address indexed nftAddress,
-        uint indexed tokenId,
-        uint price
+        uint256 indexed tokenId,
+        uint256 price
     );
     event CancelListing(
         address indexed seller,
         address indexed nftAddress,
-        uint indexed tokenId
+        uint256 indexed tokenId
     );
     event NewNFTContractCreated(
         address indexed nftAddress,
@@ -53,13 +63,13 @@ contract NFTMarketPlace is IERC721Receiver {
         string symbol
     );
 
-    error InsufficientBalance(address buyer, uint balance, uint price);
-    error InsufficientApproveLimit(address buyer, uint allowance);
-    error HasListed(address nftAddress, uint tokenId);
+    error InsufficientBalance(address buyer, uint256 balance, uint256 price);
+    error InsufficientApproveLimit(address buyer, uint256 allowance);
+    error HasListed(address nftAddress, uint256 tokenId);
     error InvalidRequest(bytes32 requestId);
-    error NotApproved(address nftAddress, uint tokenId);
+    error NotApproved(address nftAddress, uint256 tokenId);
 
-    modifier isListed(address nftAddress, uint tokenId) {
+    modifier isListed(address nftAddress, uint256 tokenId) {
         NFTSalesInformation memory curListing = nftListings[nftAddress][
             tokenId
         ];
@@ -68,7 +78,7 @@ contract NFTMarketPlace is IERC721Receiver {
         _;
     }
 
-    modifier isOwner(address nftAddress, uint tokenId) {
+    modifier isOwner(address nftAddress, uint256 tokenId) {
         IERC721 nft = IERC721(nftAddress);
         require(
             nft.ownerOf(tokenId) == msg.sender,
@@ -85,8 +95,9 @@ contract NFTMarketPlace is IERC721Receiver {
         _;
     }
 
-    constructor(address token) {
-        ASSET_NEXUS_TOKEN = token;
+    constructor(address tokenAddr, address payable messengerAddr) {
+        assetNexusToken = AssetNexusToken(tokenAddr);
+        messenger = Messenger(messengerAddr);
     }
 
     function getAllListing()
@@ -115,73 +126,97 @@ contract NFTMarketPlace is IERC721Receiver {
     }
 
     function onERC721Received(
-        address operator,
-        address from,
-        uint256 tokenId,
-        bytes calldata data
+        address /* operator */,
+        address /* from */,
+        uint256 /* tokenId */,
+        bytes calldata /* data */
     ) external pure override returns (bytes4) {
         return this.onERC721Received.selector;
     }
 
     function listItem(
         address nftAddr,
-        uint tokenId,
-        uint price
-    ) external isOwner(nftAddr, tokenId) {
+        uint256 tokenId,
+        uint256 price,
+        uint chainId,
+        bool isCrossChain
+    ) external {
         IERC721 nft = IERC721(nftAddr);
 
         if (nftListings[nftAddr][tokenId].price > 0) {
             revert HasListed(nftAddr, tokenId);
         }
-        if (nft.getApproved(tokenId) != address(this)) {
-            revert NotApproved(nftAddr, tokenId);
+
+        if (!isCrossChain) {
+            nft.safeTransferFrom(msg.sender, address(this), tokenId);
         }
-        nft.safeTransferFrom(msg.sender, address(this), tokenId);
 
         NFTSalesInformation memory newListing = NFTSalesInformation({
             price: price,
             seller: msg.sender,
             nftAddr: nftAddr,
             tokenId: tokenId,
-            timestamp: block.timestamp
+            timestamp: block.timestamp,
+            chainId: chainId
         });
 
         nftListings[nftAddr][tokenId] = newListing;
         myListings[msg.sender].push(newListing);
         nftSaleInfoList.push(newListing);
-        emit ItemListed(msg.sender, nftAddr, tokenId);
+        emit ItemListed(
+            msg.sender,
+            nftAddr,
+            tokenId,
+            price,
+            block.timestamp,
+            chainId
+        );
     }
 
     function buyItem(
         address nftAddr,
-        uint tokenId
+        uint256 tokenId,
+        uint64 destinationChainSelector,
+        address receiver,
+        bool isCrossChain
     ) external isListed(nftAddr, tokenId) {
         NFTSalesInformation memory curListing = nftListings[nftAddr][tokenId];
-        IERC20 token = IERC20(ASSET_NEXUS_TOKEN);
-        uint allowanceAmount = token.allowance(msg.sender, address(this));
-        uint balance = token.balanceOf(msg.sender);
-
-        if (allowanceAmount < curListing.price) {
-            revert InsufficientApproveLimit(msg.sender, allowanceAmount);
-        }
-        if (balance < curListing.price) {
-            revert InsufficientBalance(msg.sender, balance, curListing.price);
-        }
-
-        token.transferFrom(msg.sender, address(this), curListing.price);
+        assetNexusToken.transferFrom(
+            msg.sender,
+            address(this),
+            curListing.price
+        );
         proceeds[curListing.seller] += curListing.price;
         delete nftListings[nftAddr][tokenId];
 
+        if (!isCrossChain) {
+            IERC721(nftAddr).safeTransferFrom(
+                address(this),
+                msg.sender,
+                tokenId
+            );
+        } else {
+            bytes memory data = abi.encodeWithSignature(
+                "transferFrom(address,address,uint256)",
+                curListing.seller,
+                msg.sender,
+                curListing.tokenId
+            );
+            messenger.sendMessagePayLINK(
+                destinationChainSelector,
+                receiver,
+                data
+            );
+        }
+
         handleRemove(nftSaleInfoList, nftAddr, tokenId);
         handleRemove(myListings[curListing.seller], nftAddr, tokenId);
-
-        IERC721(nftAddr).safeTransferFrom(address(this), msg.sender, tokenId);
         emit BuyItem(msg.sender, nftAddr, tokenId, curListing.price);
     }
 
     function cancelListing(
         address nftAddr,
-        uint tokenId
+        uint256 tokenId
     ) external isListed(nftAddr, tokenId) {
         delete nftListings[nftAddr][tokenId];
         handleRemove(myListings[msg.sender], nftAddr, tokenId);
@@ -193,8 +228,8 @@ contract NFTMarketPlace is IERC721Receiver {
 
     function updateListing(
         address nftAddr,
-        uint tokenId,
-        uint newPrice
+        uint256 tokenId,
+        uint256 newPrice
     ) external isListed(nftAddr, tokenId) {
         nftListings[nftAddr][tokenId].price = newPrice;
         handleUpdate(myListings[msg.sender], nftAddr, tokenId, newPrice);
@@ -204,10 +239,10 @@ contract NFTMarketPlace is IERC721Receiver {
     }
 
     function withDrawProceeds() external {
-        uint curProceeds = proceeds[msg.sender];
+        uint256 curProceeds = proceeds[msg.sender];
         require(curProceeds > 0, "you have no proceeds!");
         delete proceeds[msg.sender];
-        IERC20(ASSET_NEXUS_TOKEN).transfer(msg.sender, curProceeds);
+        assetNexusToken.transfer(msg.sender, curProceeds);
     }
 
     function addAddressToWhitelist(address _address) external {
@@ -221,9 +256,9 @@ contract NFTMarketPlace is IERC721Receiver {
     function handleRemove(
         NFTSalesInformation[] storage listings,
         address nftAddr,
-        uint tokenId
+        uint256 tokenId
     ) internal {
-        for (uint i = 0; i < listings.length; i++) {
+        for (uint256 i = 0; i < listings.length; i++) {
             if (
                 listings[i].nftAddr == nftAddr && listings[i].tokenId == tokenId
             ) {
@@ -237,10 +272,10 @@ contract NFTMarketPlace is IERC721Receiver {
     function handleUpdate(
         NFTSalesInformation[] storage listings,
         address nftAddr,
-        uint tokenId,
-        uint newPrice
+        uint256 tokenId,
+        uint256 newPrice
     ) internal {
-        for (uint i = 0; i < listings.length; i++) {
+        for (uint256 i = 0; i < listings.length; i++) {
             if (
                 listings[i].nftAddr == nftAddr && listings[i].tokenId == tokenId
             ) {
