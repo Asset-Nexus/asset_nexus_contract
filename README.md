@@ -17,8 +17,9 @@ NFTMarketPlace#NFTMarketPlace - 0xBFbEf835f24CC8C54b407fa6790eF3242e787ED8
 
 wemix:
 > Due to the fact that hardhat does not support deployment and verification of the network, it is temporarily executed through the remix ide.
-nft：0xB6cBBbbF49664c749Fc519d7d03194C22645CC31
-receiver：0xD6C1e806B29D22B862e5c8AA2a35CE2e98B82002
+
+- nft：0xB6cBBbbF49664c749Fc519d7d03194C22645CC31
+- receiver：0xD6C1e806B29D22B862e5c8AA2a35CE2e98B82002
 
 ## Test account
 1. 0xc0ee714715108b1a6795391f7e05a044d795ba70
