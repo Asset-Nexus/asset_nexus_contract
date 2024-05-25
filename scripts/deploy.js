@@ -13,10 +13,13 @@ async function main() {
 //   const assetNexusToken = await ethers.deployContract("AssetNexusToken");
 //   console.log("AssetNexusToken deployed to:", assetNexusToken.target);
 
+  const assetNexusNft = await ethers.deployContract("AssetNexusNft", ["AN_Test", "AN_Test_Symbol"]);
+  console.log("assetNexusNft deployed to:", assetNexusNft.target);
+
   // 部署 NFTMarketPlace 合约，传入 AssetNexusToken 地址
-  const nftMarketPlace = await ethers.deployContract("NFTMarketPlace", [
-    "0x6b72efbD2cC99863d747f38B5E158090bA6248b4",
-  ]);
+  // const nftMarketPlace = await ethers.deployContract("NFTMarketPlace", [
+  //   "0x6b72efbD2cC99863d747f38B5E158090bA6248b4",
+  // ]);
 
   console.log("NFTMarketPlace deployed to:", nftMarketPlace.target);
 }
