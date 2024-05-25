@@ -35,7 +35,7 @@ describe("Test", function () {
 
     nftMarketPlace = await ethers.deployContract(
       "NFTMarketPlace",
-      [assetNexusToken.target, messenger.target],
+      [assetNexusToken.target],
       accountA
     );
 

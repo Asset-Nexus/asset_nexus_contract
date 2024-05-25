@@ -20,7 +20,8 @@ contract NFTMarketPlace is IERC721Receiver {
     }
 
     AssetNexusToken public assetNexusToken;
-    Messenger public messenger;
+    // Messenger public messenger;
+    address public messengerAddr;
     NFTSalesInformation[] public nftSaleInfoList;
     // nftAddress => tokenId => NFTSalesInformation
     mapping(address => mapping(uint256 => NFTSalesInformation))
@@ -62,12 +63,21 @@ contract NFTMarketPlace is IERC721Receiver {
         string name,
         string symbol
     );
+    event changeMessenger(
+        address indexed oldMessengerAddr,
+        address newMessengerAddr
+    );
+    event AddWhitelist(address indexed account);
+    event RemoveWhitelist(address indexed account);
 
     error InsufficientBalance(address buyer, uint256 balance, uint256 price);
     error InsufficientApproveLimit(address buyer, uint256 allowance);
     error HasListed(address nftAddress, uint256 tokenId);
     error InvalidRequest(bytes32 requestId);
     error NotApproved(address nftAddress, uint256 tokenId);
+    error MessengerNotSet();
+
+    
 
     modifier isListed(address nftAddress, uint256 tokenId) {
         NFTSalesInformation memory curListing = nftListings[nftAddress][
@@ -95,9 +105,15 @@ contract NFTMarketPlace is IERC721Receiver {
         _;
     }
 
-    constructor(address tokenAddr, address payable messengerAddr) {
+    constructor(address tokenAddr) {
         assetNexusToken = AssetNexusToken(tokenAddr);
-        messenger = Messenger(messengerAddr);
+    }
+
+    function setNewMessenger(
+        address newMessengerAddr
+    ) external onlyWhitelisted {
+        emit changeMessenger(messengerAddr, newMessengerAddr);
+        messengerAddr = newMessengerAddr;
     }
 
     function getAllListing()
@@ -189,23 +205,26 @@ contract NFTMarketPlace is IERC721Receiver {
         proceeds[curListing.seller] += curListing.price;
         delete nftListings[nftAddr][tokenId];
 
-        if (!isCrossChain) {
-            IERC721(nftAddr).safeTransferFrom(
-                address(this),
-                msg.sender,
-                tokenId
-            );
-        } else {
+        if (isCrossChain) {
+            if (messengerAddr == address(0)) {
+                revert MessengerNotSet();
+            }
             bytes memory data = abi.encodeWithSignature(
                 "transferFrom(address,address,uint256)",
                 curListing.seller,
                 msg.sender,
                 curListing.tokenId
             );
-            messenger.sendMessagePayLINK(
+            Messenger(payable(messengerAddr)).sendMessagePayLINK(
                 destinationChainSelector,
                 receiver,
                 data
+            );
+        } else {
+            IERC721(nftAddr).safeTransferFrom(
+                address(this),
+                msg.sender,
+                tokenId
             );
         }
 
@@ -247,10 +266,12 @@ contract NFTMarketPlace is IERC721Receiver {
 
     function addAddressToWhitelist(address _address) external {
         whitelist[_address] = true;
+        emit AddWhitelist(_address);
     }
 
     function removeAddressFromWhitelist(address _address) external {
         whitelist[_address] = false;
+        emit RemoveWhitelist(_address);
     }
 
     function handleRemove(

@@ -13,7 +13,7 @@ module.exports = {
       accounts: [process.env.WALLET_PRIVATE_KEY],
     },
     bnb_mainnet: {
-      url: "https://bsc-dataseed.bnbchain.org/",
+      url: "https://bsc-mainnet.core.chainstack.com/dd54dfb1762a8be07df7e39ce924c4bc",
       chainId: 56,
       accounts: [process.env.WALLET_PRIVATE_KEY],
     },

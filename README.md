@@ -8,12 +8,18 @@
 - hardhat doc：https://hardhat.org/hardhat-runner/docs/guides/deploying
 - bnb_test：https://testnet.bscscan.com/
 - wemix_test: https://explorer.test.wemix.com/
+- bsc_mainnet: https://bscscan.com/
 ## Deploy information
 bsc testnet:
 NFTMarketPlace#AssetNexusNft - 0x07bCeBAAE91C26dF232301eA292fcD0D49Efb04A
 NFTMarketPlace#AssetNexusToken - 0xFCE8d1a831cDCb085897825C4674B137a17bA2ed
 NFTMarketPlace#Messenger - 0xBcDD9f7835d0994Bde8bA1D24ffC2AF0cbBdF64e
 NFTMarketPlace#NFTMarketPlace - 0xBFbEf835f24CC8C54b407fa6790eF3242e787ED8
+
+bsc mainnet:
+AssetNexusNft - 0x8beC603694D772068343D6B6c838aA431726cEe7
+AssetNexusToken - 0x6b72efbD2cC99863d747f38B5E158090bA6248b4
+NFTMarketPlace - 0xbB9af8fa51A7e77037175B918D9c31488E5914A3
 
 wemix:
 > Due to the fact that hardhat does not support deployment and verification of the network, it is temporarily executed through the remix ide.
